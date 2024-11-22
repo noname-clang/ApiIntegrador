@@ -1,4 +1,4 @@
-action="{{ isset($produto) ? '\update/'.$produto->id :'create'}}"
+
 
 
 import { Users }  from "../models/usersModel.js";
