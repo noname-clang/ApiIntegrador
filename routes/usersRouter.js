@@ -8,6 +8,7 @@ const router = Router();
 router.post("/registro", posts.create);
 router.post("/login", posts.UserLogin);
 router.get("/", posts.ListAllLogins);
+router.get("/cpf", posts.ListAllFromCpf);
 router.get("/usd", posts.PraGringoEhMaisCaro);
 router.get("/chk", posts.GringoChecker);
 // router.post("/token", posts.TesteJWT);
