@@ -1,6 +1,3 @@
-
-
-
 import { Users }  from "../models/usersModel.js";
 import axios from 'axios';
 import { z } from "zod";
@@ -131,6 +128,39 @@ export const AtualizarUser = async (request, response) => {
     }
   });
 };
+
+
+export const ListAllFromCpf = async (request, response) => {
+  let valortotal = 0
+
+ 
+  let params = new URLSearchParams(request.originalUrl.split('?')[1]);
+ 
+
+  let cpf = params.get('cpf');
+  
+   try {
+ 
+     const user = await Users.findAll({
+       where: {
+         cpf
+       },
+       raw: true,
+     });
+ 
+     user.forEach((segredo) => {
+       valortotal +=   segredo.valor
+     })
+         
+ 
+         response.status(200).json({ ListaDeUsers: user , valortotal  });
+    
+   } catch (error) {
+     response.status(500).json({ msg: "Erro ao buscar dados" + error });
+   }
+ };
+ 
+
 export const ListAllLogins = async (request, response) => {
  let valortotal = 0
  let domo = 0, 
@@ -142,8 +172,6 @@ export const ListAllLogins = async (request, response) => {
 
 
  let params = new URLSearchParams(request.originalUrl.split('?')[1]);
-
- // Extrair os valores de 'initial' e 'final'
  let initial = params.get('initial');
  let final = params.get('final');
   try {
@@ -151,7 +179,7 @@ export const ListAllLogins = async (request, response) => {
     const user = await Users.findAll({
       where: {
         checkin: {
-          [Op.between]: [initial, final]  
+          [Op.between]: [initial,final]  
         }
       },
       raw: true,
@@ -278,4 +306,4 @@ export const GringoChecker  = async (request, response) => {
       console.error(error);
       response.status(500).json({ Err: "Erro ao consultar o dolar" });
     }
-  }
+  }  
