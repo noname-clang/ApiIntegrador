@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
 import fs from "fs";
 import formatZodError from "../helpers/zodError.js";
-import { where } from "sequelize";
+import { Op } from "sequelize";
 
 // Validações com ZOD
 const createSchema = z.object({
@@ -16,13 +16,19 @@ const createSchema = z.object({
   email: z
     .string()
     .min(5, { msg: "A descricao deve ter pelo menos 5 caracteres" }),
-  senha: z.string().min(5, { msg: "A senha deve ter pelo menos 8 caracteres" }),
 });
 
 const getSchema = z.object({
   id: z.string().uuid({ msg: "Id do post está inválido" }),
 });
 
+
+const likechecker  = (arg,response)  => {
+  if (!arg) {
+    response.status(400).json({ err: ` o ${arg} é obirgatoria` });
+    return;
+  }
+}
 export const create = async (request, response) => {
   const bodyValidation = createSchema.safeParse(request.body);
 
@@ -34,38 +40,30 @@ export const create = async (request, response) => {
     return;
   }
 
-  let { nome, email, senha, papel } = request.body;
+  let { nome, cpf, email , hospedagem , valor, checkin, checkout} = request.body;
 
-  if (!nome) {
-    response.status(400).json({ err: "o Nome é obirgatoria" });
-    return;
-  }
-  if (!email) {
-    response.status(400).json({ err: "o Email é obirgatoria" });
-    return;
-  }
-  if (!senha) {
-    response.status(400).json({ err: "A Senha é obirgatoria" });
-    return;
-  }
-  if (!papel) papel = "usuario";
+  likechecker(nome);  likechecker(cpf);  likechecker(email);  likechecker(hospedagem);  likechecker(checkin);  likechecker(checkout); likechecker(valor); 
+ 
+ 
 
-  const user = await Users.findOne({
-    where: { email },
-    raw: true,
-  });
-  if (user) {
-    response.status(500).json({ msg: "Email já foi cadastrado" });
-    return;
-  }
+  // const user = await Users.findOne({
+  //   where: { cpf },
+  //   raw: true,
+  // });
+  // if (user) {
+  //   response.status(500).json({ msg: "CPF já foi cadastrado" });
+  //   return;
+  // }
 
-  bcrypt.hash(senha, 10, async (err, hash) => {
-    senha = hash;
+
     const novopost = {
       nome,
+      cpf,
       email,
-      senha,
-      papel,
+      hospedagem,
+      valor,
+      checkin,
+      checkout,
     };
 
     try {
@@ -75,7 +73,7 @@ export const create = async (request, response) => {
       console.error(error);
       response.status(500).json({ Err: "Erro ao cadastrar o user" });
     }
-  });
+  
 };
 
 export const AtualizarUser = async (request, response) => {
@@ -131,19 +129,59 @@ export const AtualizarUser = async (request, response) => {
   });
 };
 export const ListAllLogins = async (request, response) => {
- 
-  try {
-    const user = await Users.findAll({
+ let valortotal = 0
+ let domo = 0, 
+ suite = 0, 
+ charrua = 0, 
+ chalefml = 0, 
+ cabana = 0, 
+ estacionamento = 0;
 
-      // include: [Posts],
+ console.log(request.body)
+
+  try {
+
+    const user = await Users.findAll({
+      where: {
+        checkin: {
+          [Op.between]: [request.body.initial, request.body.final]  
+        }
+      },
       raw: true,
     });
 
+    user.forEach((segredo) => {
+      valortotal +=   segredo.valor
+
+
+
+      if(segredo.hospedagem.toLowerCase() == "domo")
+        domo++ 
+        else if (segredo.hospedagem.toLowerCase() == "charrua")
+          charrua++
+        else if (segredo.hospedagem.toLowerCase() =="suite")
+          suite++
+        else if (segredo.hospedagem.toLowerCase() == "chale")
+          chalefml++
+        else if (segredo.hospedagem.toLowerCase() == "cabana")
+          cabana++
+        else if (segredo.hospedagem.toLowerCase() == "estacionamento")
+          estacionamento++  
+
+    })
         
-        response.status(200).json({ ListaDeUsers: user  });
+
+        response.status(200).json({ ListaDeUsers: user , valortotal , 
+          Acomodacoes:{"Domo" : domo ,
+            "Charrua" : charrua ,
+            "SuiteComCozinha " : suite,
+            "ChaleFML" : chalefml ,
+            "Cabana" : cabana,
+            "Estacionamento" : estacionamento
+          } });
    
   } catch (error) {
-    response.status(500).json({ msg: "Erro ao buscar dados" });
+    response.status(500).json({ msg: "Erro ao buscar dados" + error });
   }
 };
 
@@ -161,7 +199,7 @@ export const UserLogin = async (request, response) => {
   try {
     const user = await Users.findOne({
       where: { email },
-      // include: [Posts],
+      // include: [Posts], 
       raw: true,
     });
 

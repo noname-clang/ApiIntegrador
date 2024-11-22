@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 
-const conn = new Sequelize("DbBrincadeiras", "root", "Sen@iDev77!.", {
+const conn = new Sequelize("TesteIntegradorV1", "root", "Sen@iDev77!.", {
   host: "localhost",
   dialect: "mysql",
 });

@@ -19,10 +19,13 @@ export const Users = conn.define(
       required: true,
     },
     email: { type: DataTypes.STRING, allowNull: false, required: true },
-    senha: { type: DataTypes.STRING, allowNull: false, required: true },
-    papel: { type: DataTypes.STRING, allowNull: false, required: true },
+    hospedagem: { type: DataTypes.STRING, allowNull: false, required: true },
+    cpf: { type: DataTypes.STRING, allowNull: false, required: true },
+    valor: { type: DataTypes.FLOAT, allowNull: false, required: true },
+    checkin: { type: DataTypes.DATE, allowNull: false, required: true },
+    checkout: { type: DataTypes.DATE, allowNull: false, required: true },
   },
-  {
+  { 
     tableName: "users",
   }
 );
