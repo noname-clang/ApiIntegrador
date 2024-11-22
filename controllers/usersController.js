@@ -1,3 +1,6 @@
+action="{{ isset($produto) ? '\update/'.$produto->id :'create'}}"
+
+
 import { Users }  from "../models/usersModel.js";
 import axios from 'axios';
 import { z } from "zod";
@@ -137,14 +140,18 @@ export const ListAllLogins = async (request, response) => {
  cabana = 0, 
  estacionamento = 0;
 
- console.log(request.body)
 
+ let params = new URLSearchParams(request.originalUrl.split('?')[1]);
+
+ // Extrair os valores de 'initial' e 'final'
+ let initial = params.get('initial');
+ let final = params.get('final');
   try {
 
     const user = await Users.findAll({
       where: {
         checkin: {
-          [Op.between]: [request.body.initial, request.body.final]  
+          [Op.between]: [initial, final]  
         }
       },
       raw: true,
