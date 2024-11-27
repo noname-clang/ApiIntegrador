@@ -129,36 +129,50 @@ export const AtualizarUser = async (request, response) => {
   });
 };
 
-
 export const ListAllFromCpf = async (request, response) => {
-  let valortotal = 0
+  let valortotal = 0;
 
- 
+
   let params = new URLSearchParams(request.originalUrl.split('?')[1]);
- 
-
   let cpf = params.get('cpf');
   
-   try {
  
-     const user = await Users.findAll({
-       where: {
-         cpf
-       },
-       raw: true,
-     });
- 
-     user.forEach((segredo) => {
-       valortotal +=   segredo.valor
-     })
-         
- 
-         response.status(200).json({ ListaDeUsers: user , valortotal  });
-    
-   } catch (error) {
-     response.status(500).json({ msg: "Erro ao buscar dados" + error });
-   }
- };
+  const formatCpf = (cpf) => {
+    return cpf.replace(/\D/g, '') 
+              .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4'); 
+  };
+
+  const cpfSemFormatacao = cpf.replace(/\D/g, ''); 
+  const cpfFormatado = formatCpf(cpfSemFormatacao); 
+
+  console.log('CPF formatado:', cpfFormatado);  
+
+  try {
+   
+    const user = await Users.findAll({
+      where: {
+        cpf: {
+          [Op.or]: [cpfFormatado, cpfSemFormatacao] 
+        }
+      },
+      raw: true,
+    });
+
+    console.log('Usuários encontrados:', user);
+
+   
+    user.forEach((segredo) => {
+      valortotal += segredo.valor;
+    });
+
+    response.status(200).json({ ListaDeUsers: user, valortotal });
+
+  } catch (error) {
+    console.error('Erro ao buscar dados:', error);
+    response.status(500).json({ msg: "Erro ao buscar dados: " + error });
+  }
+};
+
  
 
 export const ListAllLogins = async (request, response) => {
